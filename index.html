@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Coffee &amp; Tea Spells</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#100a02;font-family:'Georgia',serif;color:#f0e6c8;overflow:hidden;touch-action:none}
+#root{display:flex;flex-direction:column;align-items:center;width:100%;height:100%;padding:6px 8px 4px}
+#header{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1200px;margin-bottom:5px;flex-shrink:0}
+#title-block h1{font-size:20px;color:#f5c842;letter-spacing:2px;font-style:italic;line-height:1.1}
+#title-block .sub{font-size:10px;color:#b8956a;letter-spacing:1px}
+#stage-badge{background:#2a1608;border:1.5px solid #f5c842;border-radius:20px;padding:4px 16px;font-size:13px;color:#f5c842;font-weight:bold}
+#stage-desc{font-size:11px;color:#b8956a;text-align:right;margin-top:3px}
+#main{display:flex;gap:10px;align-items:flex-start;justify-content:center;width:100%;max-width:1200px;flex:1;min-height:0}
+.panel{background:#221408;border:1px solid #7a5810;border-radius:8px;padding:10px;box-shadow:inset 0 1px 0 #f5c84218}
+.ptitle{font-size:10px;color:#f5c842;letter-spacing:1px;border-bottom:1px solid #7a581040;padding-bottom:4px;margin-bottom:7px;text-transform:uppercase}
+.sval{font-size:26px;color:#f5c842;font-weight:bold;line-height:1}
+.slabel{font-size:10px;color:#b8956a;margin-bottom:3px}
+#lpanel{width:150px;flex-shrink:0;display:flex;flex-direction:column;gap:8px}
+#rpanel{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;max-width:320px}
+#canvas-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0}
+#game-canvas{border:2px solid #7a5810;border-radius:6px;display:block;background:#060402;image-rendering:pixelated}
+#next-canvas{border:1px solid #7a581040;border-radius:4px;display:block;background:#080503}
+.btn{display:block;width:100%;padding:9px 6px;margin-bottom:6px;border:1px solid #7a5810;background:#341e0c;color:#f5c842;font-family:inherit;font-size:13px;cursor:pointer;border-radius:5px;transition:background .12s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.btn:last-child{margin-bottom:0}
+.btn:hover,.btn:active{background:#5a3a18}
+.btn.primary{background:#503008;border-color:#f5c842;font-size:14px}
+.btn.primary:hover,.btn.primary:active{background:#704018}
+.cinfo{font-size:11px;color:#7a5a34;line-height:1.9}
+.ckey{display:inline-block;background:#2a1608;border:1px solid #7a5810;border-radius:3px;padding:0 5px;color:#f5c842;font-size:10px;margin-right:3px}
+.rb-title{font-size:13px;color:#f5c842;text-align:center;margin-bottom:8px;border-bottom:1px solid #7a581440;padding-bottom:6px}
+.recipe-entry{margin-bottom:7px;padding:8px 9px 7px;background:#140902;border-radius:5px;border-left:3px solid #5a3808;opacity:.32;transition:opacity .35s,border-color .35s,box-shadow .35s}
+.recipe-entry.active{border-left-color:#f5c842;opacity:1;box-shadow:0 0 10px #f5c84220}
+.recipe-entry.done{border-left-color:#3a8a3a;opacity:.6}
+.rname{font-size:13px;color:#f5c842;font-weight:bold;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between}
+.recipe-entry.active .rname{color:#ffe070}
+.rtick{color:#50e050;font-size:15px;display:none}
+.rformula{display:flex;flex-wrap:wrap;gap:3px}
+.rtag{display:inline-block;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:bold;line-height:1.4;font-family:'Arial',sans-serif}
+.prog-wrap{background:#140902;border-radius:3px;height:5px;margin-top:6px;overflow:hidden}
+.prog-bar{height:100%;background:#f5c842;border-radius:3px;transition:width .4s}
+#flash{position:fixed;top:42%;left:50%;transform:translate(-50%,-50%);background:#221408f2;border:2px solid #f5c842;border-radius:10px;padding:14px 30px;font-size:19px;color:#f5c842;letter-spacing:1px;text-align:center;pointer-events:none;z-index:100;opacity:0;transition:opacity .22s;max-width:88vw}
+#flash.show{opacity:1}
+.overlay{position:fixed;inset:0;background:#050300d8;display:flex;align-items:center;justify-content:center;z-index:200;padding:12px}
+.mbox{background:#221408;border:2px solid #f5c842;border-radius:12px;padding:28px 32px;text-align:center;max-width:430px;width:100%}
+.mbox h2{font-size:24px;color:#f5c842;margin-bottom:10px}
+.mbox p{color:#b8956a;font-size:14px;margin-bottom:16px;line-height:1.7}
+.mbox .btn{font-size:16px;padding:13px}
+#dpad{display:none;gap:6px;flex-direction:column;align-items:center;margin-top:4px}
+.drow{display:flex;gap:6px;justify-content:center}
+.dbtn{width:56px;height:56px;background:#221408;border:1.5px solid #7a5810;border-radius:8px;color:#f5c842;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.dbtn.wide{width:120px;font-size:13px}
+.dbtn:active{background:#5a3a18}
+@media(pointer:coarse){#dpad{display:flex}}
+</style>
+</head>
+<body>
+<div id="root">
+  <div id="header">
+    <div id="title-block">
+      <h1>&#10022; Coffee &amp; Tea Spells &#10022;</h1>
+      <div class="sub">Stack &#8226; Connect &#8226; Brew</div>
+    </div>
+    <div style="text-align:right">
+      <div id="stage-badge">Stage 1</div>
+      <div id="stage-desc">&#9749; Coffee Spells &mdash; brew 3 recipes</div>
+    </div>
+  </div>
+  <div id="main">
+    <div id="lpanel">
+      <div class="panel">
+        <div class="ptitle">Score</div>
+        <div class="slabel">CURRENT</div>
+        <div class="sval" id="score-el">0</div>
+        <div class="slabel" style="margin-top:8px">BEST</div>
+        <div class="sval" id="hi-el" style="font-size:18px;color:#b8956a">0</div>
+      </div>
+      <div class="panel">
+        <div class="ptitle">Progress</div>
+        <div class="slabel">Recipes done</div>
+        <div class="sval" id="prog-el" style="font-size:20px">0 / 3</div>
+        <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+      </div>
+      <div class="panel">
+        <div class="ptitle">Next</div>
+        <canvas id="next-canvas" width="124" height="74"></canvas>
+      </div>
+      <div class="panel">
+        <button class="btn primary" id="btn-start">&#9654; Start</button>
+        <button class="btn" id="btn-pause">&#9208; Pause</button>
+        <button class="btn" id="btn-stop" style="border-color:#c04030;color:#ff8070">&#9632; Stop</button>
+        <button class="btn" id="btn-restart">&#8635; Restart</button>
+      </div>
+      <div class="panel">
+        <div class="ptitle">Controls</div>
+        <div class="cinfo">
+          <div><span class="ckey">&larr;</span><span class="ckey">&rarr;</span> Move</div>
+          <div><span class="ckey">&darr;</span> Soft drop</div>
+          <div><span class="ckey">&uarr;</span> Rotate</div>
+          <div><span class="ckey">Space</span> Hard drop</div>
+          <div><span class="ckey">P</span> Pause</div>
+        </div>
+      </div>
+    </div>
+    <div id="canvas-wrap">
+      <canvas id="game-canvas"></canvas>
+      <div id="dpad">
+        <div class="drow"><div class="dbtn" id="tc-up">&#128260;</div></div>
+        <div class="drow">
+          <div class="dbtn" id="tc-left">&#9664;</div>
+          <div class="dbtn" id="tc-down">&#9660;</div>
+          <div class="dbtn" id="tc-right">&#9654;</div>
+        </div>
+        <div class="drow"><div class="dbtn wide" id="tc-drop">&#11015; Hard Drop</div></div>
+      </div>
+    </div>
+    <div id="rpanel">
+      <div class="panel" style="flex:1">
+        <div class="rb-title" id="rb-title">&#128218; Recipe Book</div>
+        <div id="recipe-list"></div>
+        <div style="margin-top:8px;padding-top:6px;border-top:1px solid #7a581430;font-size:10px;color:#5a3a20;line-height:1.8">
+          Get all recipe ingredients <strong style="color:#c8a450">touching each other</strong> anywhere on the board!<br>
+          Gold outlines = ingredients that count for current recipe.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="flash"></div>
+<script>
+var ING={
+  Espresso:  {id:'Espresso',  label:'Espresso',  color:'#2a1408',border:'#d07020',text:'#ffb870'},
+  HotMilk:   {id:'HotMilk',   label:'Hot Milk',  color:'#48403a',border:'#d8c8a8',text:'#fff8f0'},
+  Foam:      {id:'Foam',      label:'Foam',       color:'#263440',border:'#88b8d8',text:'#c8e8f8'},
+  Chocolate: {id:'Chocolate', label:'Chocolate',  color:'#3c1c08',border:'#884828',text:'#ffaa70'},
+  Coffee:    {id:'Coffee',    label:'Coffee',     color:'#3a2010',border:'#906030',text:'#ffc898'},
+  IceCube:   {id:'IceCube',   label:'Ice Cube',   color:'#0a1c2c',border:'#3898e0',text:'#70c8ff'},
+  Flavors:   {id:'Flavors',   label:'Syrup',      color:'#3a1840',border:'#c060c8',text:'#f0a8f8'},
+  BlackTea:  {id:'BlackTea',  label:'Black Tea',  color:'#7a2020',border:'#c84848',text:'#ffc0c0'},
+  GreenTea:  {id:'GreenTea',  label:'Green Tea',  color:'#285828',border:'#50a858',text:'#a8ffb0'},
+  Oolong:    {id:'Oolong',    label:'Oolong',     color:'#583018',border:'#a86030',text:'#ffd0a0'},
+  Pearls:    {id:'Pearls',    label:'Pearls',     color:'#181818',border:'#505050',text:'#d8d8d8'},
+  Jelly:     {id:'Jelly',     label:'Coco Jelly', color:'#283428',border:'#689870',text:'#c8f0d8'},
+  Pudding:   {id:'Pudding',   label:'Pudding',    color:'#686008',border:'#d0b020',text:'#fff880'},
+  Sugar30:   {id:'Sugar30',   label:'30% Sugar',  color:'#484020',border:'#b0a840',text:'#f8f870'},
+  Sugar50:   {id:'Sugar50',   label:'50% Sugar',  color:'#584820',border:'#d0a838',text:'#ffe880'},
+  Sugar100:  {id:'Sugar100',  label:'Full Sugar', color:'#683808',border:'#d07818',text:'#ffc060'},
+  NoIce:     {id:'NoIce',     label:'No Ice',     color:'#0a280a',border:'#30a838',text:'#80ff88'},
+  LessIce:   {id:'LessIce',   label:'Less Ice',   color:'#102040',border:'#3878c8',text:'#88c8ff'},
+  RegularIce:{id:'RegularIce',label:'Reg. Ice',   color:'#102848',border:'#38a0e0',text:'#80d8ff'}
+};
+
+var SHAPES={
+  I:[[[0,0],[1,0],[2,0],[3,0]],[[0,0],[0,1],[0,2],[0,3]]],
+  O:[[[0,0],[1,0],[0,1],[1,1]]],
+  T:[[[0,0],[1,0],[2,0],[1,1]],[[0,0],[0,1],[0,2],[1,1]],[[1,0],[0,1],[1,1],[2,1]],[[1,0],[0,1],[1,1],[1,2]]],
+  L:[[[0,0],[0,1],[0,2],[1,2]],[[0,0],[1,0],[2,0],[0,1]],[[0,0],[1,0],[1,1],[1,2]],[[2,0],[0,1],[1,1],[2,1]]],
+  J:[[[1,0],[1,1],[0,2],[1,2]],[[0,0],[0,1],[1,1],[2,1]],[[0,0],[1,0],[0,1],[0,2]],[[0,0],[1,0],[2,0],[2,1]]],
+  S:[[[1,0],[2,0],[0,1],[1,1]],[[0,0],[0,1],[1,1],[1,2]]],
+  Z:[[[0,0],[1,0],[1,1],[2,1]],[[1,0],[0,1],[1,1],[0,2]]]
+};
+var SKEYS=Object.keys(SHAPES);
+
+var S1POOL=['Espresso','HotMilk','Foam','Chocolate','Coffee','IceCube','Flavors'];
+var S1REC=[
+  {id:'Latte',name:'Latte',score:100,blocks:['Espresso','HotMilk','Foam'],
+   tags:[{l:'Espresso',bg:'#2a1408',bo:'#d07020',t:'#ffb870'},{l:'Hot Milk',bg:'#48403a',bo:'#d8c8a8',t:'#fff8f0'},{l:'Foam',bg:'#263440',bo:'#88b8d8',t:'#c8e8f8'}]},
+  {id:'Mocha',name:'Mocha',score:100,blocks:['Espresso','Chocolate','HotMilk'],
+   tags:[{l:'Espresso',bg:'#2a1408',bo:'#d07020',t:'#ffb870'},{l:'Chocolate',bg:'#3c1c08',bo:'#884828',t:'#ffaa70'},{l:'Hot Milk',bg:'#48403a',bo:'#d8c8a8',t:'#fff8f0'}]},
+  {id:'Frappuccino',name:'Frappuccino',score:100,blocks:['Coffee','IceCube','Flavors'],
+   tags:[{l:'Coffee',bg:'#3a2010',bo:'#906030',t:'#ffc898'},{l:'Ice Cube',bg:'#0a1c2c',bo:'#3898e0',t:'#70c8ff'},{l:'Syrup',bg:'#3a1840',bo:'#c060c8',t:'#f0a8f8'}]}
+];
+
+var S2POOL=['BlackTea','GreenTea','Oolong','Pearls','Jelly','Pudding','Sugar30','Sugar50','Sugar100','NoIce','LessIce','RegularIce'];
+var S2REC=[
+  {id:'BubbleMilkTea',name:'Bubble Milk Tea',score:120,blocks:['BlackTea','Pearls','Sugar50','RegularIce'],
+   tags:[{l:'Black Tea',bg:'#7a2020',bo:'#c84848',t:'#ffc0c0'},{l:'Pearls',bg:'#181818',bo:'#505050',t:'#d8d8d8'},{l:'50% Sugar',bg:'#584820',bo:'#d0a838',t:'#ffe880'},{l:'Reg. Ice',bg:'#102848',bo:'#38a0e0',t:'#80d8ff'}]},
+  {id:'CoconutGreenTea',name:'Coconut Green Tea',score:120,blocks:['GreenTea','Jelly','Sugar30','LessIce'],
+   tags:[{l:'Green Tea',bg:'#285828',bo:'#50a858',t:'#a8ffb0'},{l:'Coco Jelly',bg:'#283428',bo:'#689870',t:'#c8f0d8'},{l:'30% Sugar',bg:'#484020',bo:'#b0a840',t:'#f8f870'},{l:'Less Ice',bg:'#102040',bo:'#3878c8',t:'#88c8ff'}]},
+  {id:'PuddingOolong',name:'Pudding Oolong Latte',score:120,blocks:['Oolong','Pudding','Sugar100','NoIce'],
+   tags:[{l:'Oolong',bg:'#583018',bo:'#a86030',t:'#ffd0a0'},{l:'Pudding',bg:'#686008',bo:'#d0b020',t:'#fff880'},{l:'Full Sugar',bg:'#683808',bo:'#d07818',t:'#ffc060'},{l:'No Ice',bg:'#0a280a',bo:'#30a838',t:'#80ff88'}]}
+];
+
+var COLS=10,ROWS=16,CELL=36;
+var canvas=document.getElementById('game-canvas');
+var ctx=canvas.getContext('2d');
+var nc=document.getElementById('next-canvas');
+var nctx=nc.getContext('2d');
+
+function sizeCanvas(){
+  var lp=document.getElementById('lpanel');
+  var rp=document.getElementById('rpanel');
+  var hd=document.getElementById('header');
+  var isTouch=window.matchMedia('(pointer:coarse)').matches;
+  var dpadH=isTouch?180:0;
+  var availH=window.innerHeight-hd.offsetHeight-22-dpadH-12;
+  var availW=window.innerWidth-lp.offsetWidth-rp.offsetWidth-60;
+  CELL=Math.max(18,Math.min(Math.floor(availH/ROWS),Math.floor(availW/COLS),44));
+  canvas.width=COLS*CELL;canvas.height=ROWS*CELL;
+}
+
+var board=[],curPiece=null,nextPiece=null;
+var score=0,hiScore=0,completedInStage=0;
+var curStage=1,curRecIdx=0;
+var stagePool=S1POOL,stageRecs=S1REC;
+var running=false,paused=false;
+var dropMs=480,lastDrop=0,animId=null,flashTmo=null;
+var clearFlash=[];  // [{r,c}] cells currently flashing before removal
+var clearing=false; // block input while clear animation plays
+
+function initBoard(){board=[];for(var r=0;r<ROWS;r++){board[r]=[];for(var c=0;c<COLS;c++)board[r][c]=null;}}
+
+function allowed(){
+  if(curRecIdx>=stageRecs.length)return stagePool.map(function(id){return ING[id];});
+  return stageRecs[curRecIdx].blocks.map(function(id){return ING[id];});
+}
+
+function makePiece(){
+  var sk=SKEYS[Math.floor(Math.random()*SKEYS.length)];
+  var ri=Math.floor(Math.random()*SHAPES[sk].length);
+  var offs=SHAPES[sk][ri];
+  var pool=allowed();
+  var ing=pool[Math.floor(Math.random()*pool.length)];
+  var maxDc=0;for(var i=0;i<offs.length;i++)if(offs[i][0]>maxDc)maxDc=offs[i][0];
+  var pc=Math.floor((COLS-maxDc)/2),pr=0;
+  var cells=offs.map(function(o){return[pc+o[0],pr+o[1]];});
+  return{cells:cells,ing:ing,sk:sk,ri:ri,offs:offs,pc:pc,pr:pr};
+}
+
+function canPlace(cells){
+  for(var i=0;i<cells.length;i++){
+    var c=cells[i][0],r=cells[i][1];
+    if(c<0||c>=COLS||r>=ROWS)return false;
+    if(r>=0&&board[r][c])return false;
+  }
+  return true;
+}
+
+function rotate(){
+  var s=SHAPES[curPiece.sk];
+  var nr=(curPiece.ri+1)%s.length;
+  var no=s[nr];
+  for(var k=0;k<[0,-1,1,-2,2].length;k++){
+    var kick=[0,-1,1,-2,2][k];
+    var nc2=curPiece.pc+kick;
+    var cells=no.map(function(o){return[nc2+o[0],curPiece.pr+o[1]];});
+    if(canPlace(cells)){curPiece.ri=nr;curPiece.offs=no;curPiece.pc=nc2;curPiece.cells=cells;return;}
+  }
+}
+
+function move(dx){
+  var cells=curPiece.cells.map(function(c){return[c[0]+dx,c[1]];});
+  if(canPlace(cells)){curPiece.cells=cells;curPiece.pc+=dx;}
+}
+
+function dropOne(){
+  var cells=curPiece.cells.map(function(c){return[c[0],c[1]+1];});
+  if(canPlace(cells)){curPiece.cells=cells;curPiece.pr+=1;return true;}
+  return false;
+}
+
+function ghost(){
+  var cells=curPiece.cells.map(function(c){return[c[0],c[1]];});
+  while(true){var n=cells.map(function(c){return[c[0],c[1]+1];});if(!canPlace(n))break;cells=n;}
+  return cells;
+}
+
+function softDrop(){if(dropOne())score+=1;else place();updUI();}
+function hardDrop(){var d=0;while(dropOne())d++;score+=d;place();updUI();}
+
+/* ── place & check ── */
+function place(){
+  for(var i=0;i<curPiece.cells.length;i++){
+    var c=curPiece.cells[i][0],r=curPiece.cells[i][1];
+    if(r>=0&&r<ROWS&&c>=0&&c<COLS)board[r][c]=curPiece.ing;
+  }
+  checkRecipes();
+  if(!clearing){
+    curPiece=nextPiece;nextPiece=makePiece();drawNext();
+    if(!canPlace(curPiece.cells))gameOver2();
+  }
+}
+
+/* ════════════════════════════════════════════
+   2D FLOOD-FILL RECIPE CHECK
+   ─────────────────────────────────────────
+   1. Find all connected components on the board.
+   2. For each component, check if it contains ALL required ingredient IDs.
+   3. If yes, find a minimal connected sub-cluster covering one cell of
+      each required type, then remove those cells.
+════════════════════════════════════════════ */
+function checkRecipes(){
+  if(curRecIdx>=stageRecs.length)return;
+  var recipe=stageRecs[curRecIdx];
+  var needed=recipe.blocks; // array of IDs
+
+  /* -- collect filled cells -- */
+  var DIR=[[-1,0],[1,0],[0,-1],[0,1]];
+
+  /* BFS to get one connected component starting at (sr,sc) */
+  var visited=[];
+  for(var r=0;r<ROWS;r++){visited[r]=[];for(var c=0;c<COLS;c++)visited[r][c]=false;}
+
+  function bfs(sr,sc){
+    var q=[[sr,sc]],comp=[];
+    visited[sr][sc]=true;
+    while(q.length){
+      var pos=q.shift(),r=pos[0],c=pos[1];
+      comp.push([r,c]);
+      for(var d=0;d<4;d++){
+        var nr=r+DIR[d][0],nc2=c+DIR[d][1];
+        if(nr>=0&&nr<ROWS&&nc2>=0&&nc2<COLS&&!visited[nr][nc2]&&board[nr][nc2]){
+          visited[nr][nc2]=true;q.push([nr,nc2]);
+        }
+      }
+    }
+    return comp;
+  }
+
+  /* collect all components */
+  var comps=[];
+  for(var r=0;r<ROWS;r++)for(var c=0;c<COLS;c++)
+    if(board[r][c]&&!visited[r][c])comps.push(bfs(r,c));
+
+  /* check each component */
+  var matchCells=null;
+  for(var ci=0;ci<comps.length&&!matchCells;ci++){
+    var comp=comps[ci];
+    /* does this component contain all needed IDs? */
+    var idSet={};
+    for(var ci2=0;ci2<comp.length;ci2++)idSet[board[comp[ci2][0]][comp[ci2][1]].id]=true;
+    var covers=true;
+    for(var ni=0;ni<needed.length;ni++)if(!idSet[needed[ni]]){covers=false;break;}
+    if(!covers)continue;
+
+    /* find minimal connected sub-cluster covering all needed IDs
+       BFS only through cells whose ID is in needed, starting from
+       any needed-ingredient cell, until all IDs are covered */
+    var neededSet={};
+    for(var ni=0;ni<needed.length;ni++)neededSet[needed[ni]]=true;
+
+    /* seed: first cell in comp that belongs to a needed type */
+    var seed=null;
+    for(var ci2=0;ci2<comp.length;ci2++){
+      if(neededSet[board[comp[ci2][0]][comp[ci2][1]].id]){seed=comp[ci2];break;}
+    }
+    if(!seed)continue;
+
+    var vis2={};
+    function key(r,c){return r*100+c;}
+    var q2=[seed],result=[],covered={};
+    vis2[key(seed[0],seed[1])]=true;
+    while(q2.length&&Object.keys(covered).length<needed.length){
+      var pos=q2.shift(),r=pos[0],c=pos[1];
+      var id=board[r][c].id;
+      if(neededSet[id]){result.push([r,c]);covered[id]=true;}
+      for(var d=0;d<4;d++){
+        var nr=r+DIR[d][0],nc2=c+DIR[d][1];
+        var k=key(nr,nc2);
+        if(nr>=0&&nr<ROWS&&nc2>=0&&nc2<COLS&&!vis2[k]&&board[nr][nc2]&&neededSet[board[nr][nc2].id]){
+          vis2[k]=true;q2.push([nr,nc2]);
+        }
+      }
+    }
+    if(Object.keys(covered).length===needed.length)matchCells=result;
+  }
+
+  if(matchCells){
+    clearing=true;
+    clearFlash=matchCells.map(function(rc){return{r:rc[0],c:rc[1]};});
+    setTimeout(function(){
+      for(var i=0;i<matchCells.length;i++)board[matchCells[i][0]][matchCells[i][1]]=null;
+      applyGravity();
+      clearFlash=[];clearing=false;
+      score+=recipe.score;
+      if(score>hiScore)hiScore=score;
+      completedInStage++;
+      markDone(curRecIdx);
+      showFlash('✨ '+recipe.name+' — Brewed!',2200);
+      curRecIdx++;
+      updUI();
+      if(curRecIdx>=stageRecs.length){
+        if(curStage===1)setTimeout(showStageTransition,2500);
+        else setTimeout(showVictory,2500);
+      } else {
+        setTimeout(function(){
+          activateRec(curRecIdx);
+          curPiece=nextPiece;nextPiece=makePiece();drawNext();
+          if(!canPlace(curPiece.cells))gameOver2();
+        },450);
+      }
+    },380);
+  }
+}
+
+function applyGravity(){
+  for(var c=0;c<COLS;c++){
+    var stack=[];
+    for(var r=ROWS-1;r>=0;r--)if(board[r][c])stack.push(board[r][c]);
+    for(var r=ROWS-1;r>=0;r--)board[r][c]=stack.shift()||null;
+  }
+}
+
+/* ════════════════════════════════════════════
+   DRAWING
+════════════════════════════════════════════ */
+function drawCell(cx,x,y,ing,sz,alpha){
+  var px=x*sz,py=y*sz,s=sz-2;
+  cx.globalAlpha=alpha||1;
+  cx.fillStyle=ing.color;cx.fillRect(px+1,py+1,s,s);
+  cx.strokeStyle=ing.border;cx.lineWidth=2;cx.strokeRect(px+2,py+2,s-2,s-2);
+  cx.globalAlpha=(alpha||1)*.16;cx.fillStyle='#fff';cx.fillRect(px+4,py+4,s-8,Math.floor(sz*.19));
+  cx.globalAlpha=alpha||1;cx.fillStyle=ing.text;
+  cx.textAlign='center';cx.textBaseline='middle';
+  var lbl=ing.label;
+  var fz=Math.max(9,Math.floor(sz*0.27));
+  cx.font='bold '+fz+'px Arial,sans-serif';
+  var ws=lbl.split(' ');
+  if(ws.length>1){var lh=fz*1.22;cx.fillText(ws[0],px+sz/2,py+sz/2-lh*.52);cx.fillText(ws.slice(1).join(' '),px+sz/2,py+sz/2+lh*.52);}
+  else cx.fillText(lbl,px+sz/2,py+sz/2);
+  cx.globalAlpha=1;
+}
+
+function drawBoard(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#060402';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle='#181008';ctx.lineWidth=.5;
+  for(var r=0;r<ROWS;r++)for(var c=0;c<COLS;c++)ctx.strokeRect(c*CELL,r*CELL,CELL,CELL);
+
+  /* build flash set */
+  var fset={};
+  for(var i=0;i<clearFlash.length;i++)fset[clearFlash[i].r*100+clearFlash[i].c]=true;
+
+  /* needed highlight set */
+  var needSet=null;
+  if(curRecIdx<stageRecs.length){needSet={};var nb=stageRecs[curRecIdx].blocks;for(var i=0;i<nb.length;i++)needSet[nb[i]]=true;}
+
+  for(var r=0;r<ROWS;r++){
+    for(var c=0;c<COLS;c++){
+      if(!board[r][c])continue;
+      if(fset[r*100+c]){
+        ctx.globalAlpha=.8;ctx.fillStyle='#ffe080';ctx.fillRect(c*CELL,r*CELL,CELL,CELL);ctx.globalAlpha=1;
+      } else {
+        drawCell(ctx,c,r,board[r][c],CELL);
+        if(needSet&&needSet[board[r][c].id]){
+          ctx.strokeStyle='#f5c84280';ctx.lineWidth=2;ctx.strokeRect(c*CELL+1.5,r*CELL+1.5,CELL-3,CELL-3);
+        }
+      }
+    }
+  }
+  if(curPiece){
+    var gc=ghost();
+    for(var i=0;i<gc.length;i++)if(gc[i][1]>=0)drawCell(ctx,gc[i][0],gc[i][1],curPiece.ing,CELL,.2);
+    for(var i=0;i<curPiece.cells.length;i++){var c2=curPiece.cells[i];if(c2[1]>=0)drawCell(ctx,c2[0],c2[1],curPiece.ing,CELL);}
+  }
+}
+
+function drawNext(){
+  var w=nc.width,h=nc.height;
+  nctx.clearRect(0,0,w,h);nctx.fillStyle='#080503';nctx.fillRect(0,0,w,h);
+  if(!nextPiece)return;
+  var offs=nextPiece.offs;
+  var maxC=0,maxR=0;
+  for(var i=0;i<offs.length;i++){if(offs[i][0]>maxC)maxC=offs[i][0];if(offs[i][1]>maxR)maxR=offs[i][1];}
+  var sz=Math.min(Math.floor(w/(maxC+1.6)),Math.floor(h/(maxR+1.6)),28);
+  var ox=Math.floor((w-(maxC+1)*sz)/2),oy=Math.floor((h-(maxR+1)*sz)/2);
+  for(var i=0;i<offs.length;i++){
+    var dc=offs[i][0],dr=offs[i][1];
+    var px=ox+dc*sz,py=oy+dr*sz,s=sz-2;
+    nctx.fillStyle=nextPiece.ing.color;nctx.fillRect(px+1,py+1,s,s);
+    nctx.strokeStyle=nextPiece.ing.border;nctx.lineWidth=1.5;nctx.strokeRect(px+1.5,py+1.5,s-1,s-1);
+    nctx.fillStyle=nextPiece.ing.text;
+    var nfz=Math.max(6,Math.floor(sz*.26));
+    nctx.font='bold '+nfz+'px Arial,sans-serif';
+    nctx.textAlign='center';nctx.textBaseline='middle';
+    nctx.fillText(nextPiece.ing.label.split(' ')[0],px+sz/2,py+sz/2);
+  }
+}
+
+function gameLoop(ts){
+  if(!running||paused)return;
+  if(ts-lastDrop>dropMs){lastDrop=ts;if(!dropOne())place();}
+  drawBoard();
+  animId=requestAnimationFrame(gameLoop);
+}
+
+function showFlash(msg,dur){
+  var el=document.getElementById('flash');el.innerHTML=msg;el.classList.add('show');
+  clearTimeout(flashTmo);flashTmo=setTimeout(function(){el.classList.remove('show');},dur||1800);
+}
+function showOv(id,html){
+  rmOv(id);var d=document.createElement('div');d.className='overlay';d.id=id;
+  d.innerHTML='<div class="mbox">'+html+'</div>';document.body.appendChild(d);
+}
+function rmOv(id){var el=document.getElementById(id);if(el)el.remove();}
+
+function showStageTransition(){
+  running=false;cancelAnimationFrame(animId);
+  showOv('stage-ov','<h2>&#9749; Stage 1 Complete!</h2><p style="font-size:16px;color:#f5c842;margin-bottom:6px">All Coffee Spells unlocked!</p><p>Score: <strong style="color:#f5c842">'+score+'</strong><br><br>Stage 2 &mdash; &#129483; <strong style="color:#ffe070">Bubble Tea Series</strong><br>Complete 3 drink recipes!</p><button class="btn primary" onclick="startStage2()">&#9654; Stage 2</button>');
+}
+function startStage2(){
+  rmOv('stage-ov');curStage=2;stagePool=S2POOL;stageRecs=S2REC;
+  curRecIdx=0;completedInStage=0;dropMs=420;
+  initBoard();buildPanel();activateRec(0);
+  document.getElementById('stage-badge').textContent='Stage 2';
+  document.getElementById('stage-desc').textContent='Bubble Tea \u2014 brew 3 recipes';
+  updUI();running=true;paused=false;
+  curPiece=makePiece();nextPiece=makePiece();drawNext();
+  lastDrop=performance.now();animId=requestAnimationFrame(gameLoop);
+}
+function showVictory(){
+  running=false;cancelAnimationFrame(animId);
+  showOv('victory-ov','<h2>&#127881; All Stages Clear!</h2><p style="font-size:16px;color:#f5c842;margin-bottom:6px">Master Barista Wizard!</p><p>Final Score: <strong style="color:#f5c842;font-size:24px">'+score+'</strong><br><br>&#127942; <strong style="color:#ffe070">Barista Wizard</strong> unlocked!</p><button class="btn primary" onclick="startGame()">&#8635; Play Again</button>');
+}
+function gameOver2(){
+  running=false;cancelAnimationFrame(animId);
+  if(score>hiScore)hiScore=score;
+  showOv('gameover-ov','<h2>&#128167; Magic Depleted</h2><p>Blocks stacked to the top!<br>Score: <strong style="color:#f5c842">'+score+'</strong></p><button class="btn primary" onclick="startGame()">&#8635; Try Again</button>');
+}
+
+function buildPanel(){
+  var list=document.getElementById('recipe-list');list.innerHTML='';
+  for(var i=0;i<stageRecs.length;i++){
+    var r=stageRecs[i];
+    var d=document.createElement('div');d.className='recipe-entry';d.id='re-'+i;
+    var tags='';for(var j=0;j<r.tags.length;j++){var tg=r.tags[j];tags+='<span class="rtag" style="background:'+tg.bg+';border:1px solid '+tg.bo+';color:'+tg.t+'">'+tg.l+'</span>';}
+    d.innerHTML='<div class="rname"><span>'+r.name+'</span><span class="rtick" id="tick-'+i+'">&#10003;</span></div><div class="rformula">'+tags+'</div>';
+    list.appendChild(d);
+  }
+  document.getElementById('rb-title').textContent=curStage===1?'Recipe Book \u2014 Coffee Stage':'Recipe Book \u2014 Bubble Tea Stage';
+}
+function activateRec(idx){
+  var els=document.querySelectorAll('.recipe-entry');
+  for(var i=0;i<els.length;i++){els[i].classList.remove('active');if(i===idx)els[i].classList.add('active');}
+}
+function markDone(idx){
+  var el=document.getElementById('re-'+idx);if(el){el.classList.remove('active');el.classList.add('done');}
+  var tk=document.getElementById('tick-'+idx);if(tk)tk.style.display='inline';
+}
+function updUI(){
+  document.getElementById('score-el').textContent=score;
+  document.getElementById('hi-el').textContent=hiScore;
+  var t=stageRecs.length;
+  document.getElementById('prog-el').textContent=completedInStage+' / '+t;
+  document.getElementById('prog-bar').style.width=(completedInStage/t*100)+'%';
+}
+
+function startGame(){
+  ['gameover-ov','start-ov','stage-ov','victory-ov','stopped-ov'].forEach(rmOv);
+  curStage=1;stagePool=S1POOL;stageRecs=S1REC;
+  curRecIdx=0;completedInStage=0;score=0;dropMs=480;
+  running=false;paused=false;clearFlash=[];clearing=false;
+  sizeCanvas();initBoard();buildPanel();activateRec(0);
+  document.getElementById('stage-badge').textContent='Stage 1';
+  document.getElementById('stage-desc').textContent='Coffee Spells \u2014 brew 3 recipes';
+  document.getElementById('btn-pause').textContent='Pause';
+  curPiece=makePiece();nextPiece=makePiece();drawNext();updUI();
+  cancelAnimationFrame(animId);running=true;
+  lastDrop=performance.now();animId=requestAnimationFrame(gameLoop);
+}
+function stopGame(){
+  if(!running)return;
+  running=false;paused=false;clearing=false;clearFlash=[];
+  cancelAnimationFrame(animId);
+  if(score>hiScore)hiScore=score;
+  document.getElementById('btn-pause').textContent='Pause';
+  showOv('stopped-ov','<h2>&#9632; Game Stopped</h2><p>Score: <strong style="color:#f5c842">'+score+'</strong><br><br>Press Start to begin a new game<br>or Restart to try again.</p><button class="btn primary" onclick="startGame()">&#9654; New Game</button>');
+}
+function pauseGame(){
+  if(!running)return;paused=!paused;
+  document.getElementById('btn-pause').textContent=paused?'Resume':'Pause';
+  if(!paused){lastDrop=performance.now();animId=requestAnimationFrame(gameLoop);}
+}
+
+document.addEventListener('keydown',function(e){
+  if(!running||paused){if(e.key==='p'||e.key==='P')pauseGame();return;}
+  if(clearing)return;
+  switch(e.key){
+    case 'ArrowLeft':e.preventDefault();move(-1);drawBoard();break;
+    case 'ArrowRight':e.preventDefault();move(1);drawBoard();break;
+    case 'ArrowDown':e.preventDefault();softDrop();break;
+    case 'ArrowUp':e.preventDefault();rotate();drawBoard();break;
+    case ' ':e.preventDefault();hardDrop();break;
+    case 'p':case 'P':pauseGame();break;
+  }
+});
+
+function ta(act){
+  if(!running||paused||clearing)return;
+  if(act==='left'){move(-1);drawBoard();}
+  else if(act==='right'){move(1);drawBoard();}
+  else if(act==='down')softDrop();
+  else if(act==='up'){rotate();drawBoard();}
+  else if(act==='drop')hardDrop();
+}
+var holdIv=null;
+['tc-left','tc-right','tc-down','tc-up','tc-drop'].forEach(function(id){
+  var btn=document.getElementById(id);if(!btn)return;
+  var act=id.replace('tc-','');
+  btn.addEventListener('touchstart',function(e){e.preventDefault();ta(act);},{passive:false});
+  btn.addEventListener('mousedown',function(){ta(act);});
+});
+['tc-left','tc-right','tc-down'].forEach(function(id){
+  var btn=document.getElementById(id);if(!btn)return;
+  var act=id.replace('tc-','');
+  btn.addEventListener('touchstart',function(e){e.preventDefault();ta(act);holdIv=setInterval(function(){ta(act);},110);},{passive:false});
+  ['touchend','touchcancel'].forEach(function(ev){btn.addEventListener(ev,function(){clearInterval(holdIv);});});
+});
+document.getElementById('btn-start').addEventListener('click',startGame);
+document.getElementById('btn-pause').addEventListener('click',pauseGame);
+document.getElementById('btn-stop').addEventListener('click',stopGame);
+document.getElementById('btn-restart').addEventListener('click',startGame);
+window.addEventListener('resize',function(){sizeCanvas();drawBoard();drawNext();});
+
+sizeCanvas();initBoard();buildPanel();drawBoard();drawNext();updUI();
+showOv('start-ov','<h2>&#10022; Coffee &amp; Tea Spells &#10022;</h2><p>Drop tetromino blocks and get all recipe ingredients <strong style="color:#f5c842">touching each other</strong> on the board to brew the drink!<br><br><strong style="color:#f5c842">Stage 1</strong> &#9749; Coffee Spells (3 recipes)<br><strong style="color:#f5c842">Stage 2</strong> &#129483; Bubble Tea Series (3 recipes)<br><br>Gold outlines show which blocks count for the current recipe.<br>Connect them all to brew!</p><button class="btn primary" onclick="startGame()">&#10022; Start Brewing &#10022;</button>');
+</script>
+</body>
+</html>
